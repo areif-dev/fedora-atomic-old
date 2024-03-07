@@ -53,7 +53,9 @@ RUN rpm-ostree install \
     zsh \
     zsh-autosuggestions
 
-RUN rpm-ostree remove openrgb-udev-rules
+RUN rpm-ostree uninstall \
+    openrgb-udev-rules \
+    oversteer-udev
 
 RUN ostree container commit && \
     mkdir -p /var/tmp && chmod -R 1777 /var/tmp
