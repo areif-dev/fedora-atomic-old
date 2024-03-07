@@ -1,0 +1,36 @@
+name: Build and publish to ghcr.io
+on:
+
+  # publish on releases, e.g. v2.1.13 (image tagged as "2.1.13" - "v" prefix is removed)
+  release:
+    types: [ published ]
+
+  # publish on pushes to the main branch (image tagged as "latest")
+  push:
+    branches:
+      - main
+
+    # Don't rebuild for pushes only to markdown files
+    paths-ignore: 
+      - "**.md"
+
+  # publish every day at 4:30pm
+  schedule: 
+    - cron: "30 16 * * *"
+  
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  docker_publish:
+    runs-on: "ubuntu-22.04"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # https://github.com/marketplace/actions/push-to-ghcr
+      - name: Build and publish a Container image for ${{ github.repository }}
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: ${{ github.repository }}  # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
