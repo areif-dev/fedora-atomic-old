@@ -5,6 +5,8 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-39}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}
 
+RUN wget https://pkgs.tailscale.com/stable/fedora/tailscale.repo -O /etc/yum.repos.d/tailscale.repo
+
 RUN rpm-ostree install \
     alacritty \
     ansible \
