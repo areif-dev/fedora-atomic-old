@@ -1,37 +1,143 @@
-name: Build and publish to ghcr.io
+name: build-atomic-breeze
+
 on:
-
-  # publish on releases, e.g. v2.1.13 (image tagged as "2.1.13" - "v" prefix is removed)
-  release:
-    types: [ published ]
-
-  # publish on pushes to the main branch (image tagged as "latest")
-  push:
-    branches:
-      - main
-
-    # Don't rebuild for pushes only to markdown files
-    paths-ignore: 
-      - "**.md"
-
-  # publish every day at 4:30pm
-  schedule: 
-    - cron: "30 16 * * *"
-  
   pull_request:
+  merge_group:
+  schedule:
+    - cron: '0 15 * * *'  # 3pm UTC everyday (timed against official fedora container pushes)
   workflow_dispatch:
 
+env:
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
 jobs:
-  docker_publish:
-    runs-on: "ubuntu-22.04"
-
+  build:
+    name: Build 
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        version: [39]
     steps:
-      - uses: actions/checkout@v2
+      # Checkout push-to-registry action GitHub repository
+      - name: Checkout Push to Registry action
+        uses: actions/checkout@v4
 
-      # https://github.com/marketplace/actions/push-to-ghcr
-      - name: Build and publish a Container image for ${{ github.repository }}
-        uses: macbre/push-to-ghcr@master
+      - name: Generate tags
+        id: generate-tags
+        shell: bash
+        run: |
+          # Generate a timestamp for creating an image version history
+          TIMESTAMP="$(date +%Y%m%d)"
+          MAJOR_VERSION="$(echo ${{ matrix.version }} | cut -d . -f 1)"
+          COMMIT_TAGS=()
+          BUILD_TAGS=()
+          # Have tags for tracking builds during pull request
+          SHA_SHORT="${GITHUB_SHA::7}"
+
+          # Using clever bash string templating, https://stackoverflow.com/q/40771781
+          # don't make malformed tags if $MAJOR_VERSION is empty (base-image didn't include proper labels) --
+          COMMIT_TAGS+=("${SHA_SHORT}${MAJOR_VERSION:+-$MAJOR_VERSION}")
+          BUILD_TAGS=("${MAJOR_VERSION}" "${MAJOR_VERSION}-${{ matrix.arch }}" "${MAJOR_VERSION:+$MAJOR_VERSION-}${TIMESTAMP}" "${MAJOR_VERSION:+$MAJOR_VERSION-}${TIMESTAMP}-${{ matrix.arch }}")
+          # --
+          if [ "${MAJOR_VERSION}" == "39" ]; then
+            BUILD_TAGS+=("${TIMESTAMP}")
+            BUILD_TAGS+=("latest-${{ matrix.arch }}")
+          fi
+          
+          alias_tags=("${BUILD_TAGS[@]}")
+          echo "Generated the following build tags: "
+          for TAG in "${BUILD_TAGS[@]}"; do
+              echo "${TAG}"
+          done
+          echo "alias_tags=${alias_tags[*]}" >> $GITHUB_OUTPUT
+
+      # Build metadata
+      - name: Image Metadata
+        uses: docker/metadata-action@v5
+        id: meta
         with:
-          image_name: ${{ github.repository }}  # it will be lowercased internally
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dockerfile: ./Containerfile
+          images: |
+            atomic-breeze
+          labels: |
+            org.opencontainers.image.title=atomic-breeze
+            org.opencontainers.image.version=${{ matrix.version }}
+            org.opencontainers.image.description=${{ env.description }}
+            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/ublue-os/cosmic/main/README.md
+            io.artifacthub.package.logo-url=https://avatars.githubusercontent.com/u/120078124?s=200&v=4
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      # Build image using Buildah action
+      - name: Build Image
+        id: build_image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: |
+            Containerfile
+          image: atomic-breeze
+          tags: |
+            ${{ steps.generate-tags.outputs.alias_tags }}
+          archs: ${{ matrix.arch }}
+          oci: false
+
+      # Workaround bug where capital letters in your GitHub username make it impossible to push to GHCR.
+      # https://github.com/macbre/push-to-ghcr/issues/12
+      - name: Lowercase Registry
+        id: registry_case
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: ${{ env.IMAGE_REGISTRY }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Push the image to GHCR (Image Registry)
+      - name: Push To GHCR
+        uses: redhat-actions/push-to-registry@v2
+        if: github.event_name != 'pull_request'
+        id: push
+        with:
+          registry: ${{ steps.registry_case.outputs.lowercase }}
+          image: ${{ steps.build_image.outputs.image }}
+          tags: ${{ steps.build_image.outputs.tags }}
+
+      # Sign container
+      - uses: sigstore/cosign-installer@v3.4.0
+        if: github.event_name != 'pull_request'
+
+      - name: Sign container image
+        if: github.event_name != 'pull_request'
+        run: |
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ steps.build_image.outputs.image }}@${TAGS}
+        env:
+          TAGS: ${{ steps.push.outputs.digest }}
+          COSIGN_EXPERIMENTAL: false
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+
+  check:
+    name: Check all builds successful
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Exit on failure
+        if: ${{ needs.build.result == 'failure' }}
+        shell: bash
+        run: exit 1
+      - name: Exit
+        shell: bash
+        run: exit 0
