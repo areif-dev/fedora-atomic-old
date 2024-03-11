@@ -49,9 +49,7 @@ RUN rpm-ostree install \
     xdg-desktop-portal-wlr \
     xdg-user-dirs \
     xorg-x11-server-Xwayland \
-    zip \
-    zsh \
-    zsh-autosuggestions
+    zip 
 
 RUN rpm-ostree uninstall \
     openrgb-udev-rules \
