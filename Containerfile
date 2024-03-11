@@ -16,6 +16,7 @@ RUN rpm-ostree install \
     dbus-daemon \
     dbus-tools \
     dunst \
+    firefox \
     gnome-keyring \
     google-noto-emoji-fonts \
     gvfs-mtp \
