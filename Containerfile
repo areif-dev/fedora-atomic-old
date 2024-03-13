@@ -28,6 +28,7 @@ RUN rpm-ostree install \
     NetworkManager-tui \
     openssh \
     openssl \
+    openvpn \
     papirus-icon-theme \
     pipewire \
     playerctl \
