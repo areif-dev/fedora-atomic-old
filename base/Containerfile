@@ -1,4 +1,4 @@
-FROM quay.io/repository/fedora/fedora-coreos:testing
+FROM quay.io/fedora/fedora-coreos:testing
 
 RUN rpm-ostree install \
     htop \
