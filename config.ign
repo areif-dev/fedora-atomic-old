@@ -1,0 +1,18 @@
+{
+  "ignition": {
+    "version": "3.4.0"
+  },
+  "passwd": {
+    "users": [
+      {
+        "groups": [
+          "wheel"
+        ],
+        "homeDir": "/home/aj",
+        "name": "aj",
+        "passwordHash": "$y$j9T$uUATjvPVQbTyGTLlJdVf90$q1rDg3x85wDLI0MxdqHSSnnAWd7mIsQLfmAAo7XxCJ4",
+        "shell": "/bin/bash"
+      }
+    ]
+  }
+}

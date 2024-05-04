@@ -1,0 +1,12 @@
+---
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: aj 
+      password_hash: $y$j9T$uUATjvPVQbTyGTLlJdVf90$q1rDg3x85wDLI0MxdqHSSnnAWd7mIsQLfmAAo7XxCJ4
+      home_dir: /home/aj
+      groups:
+        - wheel
+      shell: /bin/bash
+    
