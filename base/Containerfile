@@ -1,56 +1,15 @@
 FROM quay.io/repository/fedora/fedora-coreos:testing
 
-RUN wget https://pkgs.tailscale.com/stable/fedora/tailscale.repo -O /etc/yum.repos.d/tailscale.repo
-
 RUN rpm-ostree install \
-    alacritty \
-    ansible \
-    bluez \
-    bluez-tools \
-    cascadia-code-pl-fonts \
-    dbus-daemon \
-    dbus-tools \
-    dunst \
-    firefox \
-    gnome-keyring \
-    google-noto-emoji-fonts \
-    gvfs-mtp \
-    grim \
-    grimshot \
-    jmtpfs \
-    lxpolkit \
-    NetworkManager \
-    NetworkManager-tui \
+    htop \
+    neovim \ 
+    net-tools \
     openssh \
     openssl \
-    openvpn \
-    papirus-icon-theme \
-    pipewire \
-    playerctl \
-    polkit \
-    ranger \
     ripgrep \
-    rofi-wayland \
-    sway \
-    swaybg \
-    swayidle \
-    swaylock \
-    tailscale \
-    thunar \
-    thunar-archive-plugin \
-    thunar-volman \
+    symlinks \ 
     unzip \
-    waybar \
-    wireplumber \
-    wl-clipboard \
-    xdg-desktop-portal-wlr \
-    xdg-user-dirs \
-    xorg-x11-server-Xwayland \
     zip 
-
-RUN rpm-ostree uninstall \
-    openrgb-udev-rules \
-    oversteer-udev
 
 RUN ostree container commit && \
     mkdir -p /var/tmp && chmod -R 1777 /var/tmp
