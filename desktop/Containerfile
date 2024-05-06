@@ -1,0 +1,32 @@
+FROM quay.io/fedora/fedora-coreos:testing
+
+RUN rpm-ostree install \
+    atheros-firmware \
+    atmel-firmware \
+    b43-fwcutter \
+    b43-openfwwf \
+    brcmfmac-firmware \
+    htop \
+    iwlwifi-dvm-firmware \
+    iwlwifi-mvm-firmware \
+    iwlegacy-firmware \
+    libertas-firmware \
+    mt7xxx-firmware \
+    neovim \
+    net-tools \
+    NetworkManager \
+    NetworkManager-tui \
+    NetworkManager-wifi \
+    nxpwireless-firmware \
+    openssh \
+    openssl \
+    realtek-firmware \
+    ripgrep \
+    symlinks \
+    tiwilink-firmware \
+    unzip \
+    zd1211-firmware \
+    zip 
+
+RUN ostree container commit && \
+    mkdir -p /var/tmp && chmod -R 1777 /var/tmp

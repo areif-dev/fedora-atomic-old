@@ -1,10 +1,10 @@
-FROM docker.io/areifdev/fedora-atomic-base:latest 
+FROM quay.io/fedora/fedora-coreos:stable
 
 RUN rpm-ostree install \
     httpd \
     mariadb-server \
     php-mysqlnd \
-    wordpress 
+    wordpress
 
 RUN ostree container commit && \
     mkdir -p /var/tmp && chmod -R 1777 /var/tmp
