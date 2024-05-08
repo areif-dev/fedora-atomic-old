@@ -5,6 +5,8 @@ passwd:
   users:
     - name: aj 
       password_hash: $y$j9T$uUATjvPVQbTyGTLlJdVf90$q1rDg3x85wDLI0MxdqHSSnnAWd7mIsQLfmAAo7XxCJ4
+      ssh_authorized_keys: 
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDilgi7appBeltfv/I74nLsBvTFQgSEHRVYSwH8l0GYaVeNW6nQfXh4NCt8gikHb64EOl0/wyaBdNbyzbINgjWsgZg8BM1MrdqbkMlieeylKjkN8G6Y1qLOJW366QtjpZ+MVQ99Jb9ZD9cK4HFXsf69AiWSzSQJl4wyecvjBfN6mFFyGeWt6kPLMwdWVHjL5vXNAnVK/1gwxBLuSRgI4Nfh5r/i9/6xPDNopQPL4GOMVZmPYCSOam0KWFk/jR7p4SK/1hEcUekaB7pWK/gA9SONMdhY72C6ShwySw5g1+zY7CA/sQg20UFcNyFxW5ey2QJGWddb0yuuC9ZbeakCS3z2TFb6coP70kDXnMxbhCwci4n6LMBh3C6akvVUhabVPqwudl2wCzoTtyIuNME16nuC+eGuymEgjSVYxi7ypVi+65vmkiLYq66WgUMArVwFiL2kyt8K+2+mn8wYyEn5aTtzPqVH0mPnqHU5PJFzKQBVKPRffRaYKql+AqmLJUE2e38= aj@fedora
       home_dir: /home/aj
       groups:
         - wheel
