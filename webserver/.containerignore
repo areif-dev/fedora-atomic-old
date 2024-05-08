@@ -1,0 +1,4 @@
+.env
+.git
+podman-compose.yml
+.containerignore
