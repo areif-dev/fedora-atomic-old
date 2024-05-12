@@ -1,0 +1,30 @@
+FROM quay.io/fedora/fedora-coreos:stable
+
+RUN rpm-ostree install \
+    certbot \ 
+    httpd \ 
+    mariadb \ 
+    mariadb-server \ 
+    mod_md \ 
+    mod_ssl \ 
+    neovim \ 
+    php \ 
+    php-cli \ 
+    php-curl \ 
+    php-fpm \ 
+    php-gd \ 
+    php-json \
+    php-mysqlnd \ 
+    php-opcache \ 
+    php-xml \ 
+    podman-compose \ 
+    python3-certbot-apache \ 
+    wordpress
+
+RUN systemctl enable httpd mariadb
+
+RUN sudo setsebool -P httpd_can_network_connect_db=1 && \
+    setsebool -P httpd_can_sendmail=1
+
+RUN ostree container commit && \
+    mkdir -p /var/tmp && chmod -R 1777 /var/tmp
