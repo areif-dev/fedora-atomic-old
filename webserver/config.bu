@@ -12,30 +12,34 @@ passwd:
       groups:
         - wheel
       shell: /bin/bash
+
+storage: 
+  files:
+    - path: /usr/local/bin/custom-provision.sh 
+      contents:
+        local: ./custom-provision.sh
+      mode: 0644 
+      user: 
+        name: aj 
+      group: 
+        name: users
       
 systemd:
   units:
-    # Layer packages that don't play well with being baked into the base image
-    - name: rpm-ostree-install.service
-      enabled: true
-      contents: |
+    - name: custom-provision.service 
+      enabled: true 
+      contents: | 
         [Unit]
-        Description=Layer base packages with rpm-ostree
-        Wants=network-online.target
-        After=network-online.target
-        # We run before `zincati.service` to avoid conflicting rpm-ostree
-        # transactions.
+        Description=Runs a custom provision script by AJ Reifsnyder 
+        Wants=network-online.target 
+        After=network-online.target 
         Before=zincati.service
         ConditionPathExists=!/var/lib/%N.stamp
 
         [Service]
         Type=oneshot
-        RemainAfterExit=yes
-        # `--allow-inactive` ensures that rpm-ostree does not return an error
-        # if the package is already installed. This is useful if the package is
-        # added to the root image in a future Fedora CoreOS release as it will
-        # prevent the service from failing.
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive certbot httpd mod_md mod_ssl neovim python3-certbot-apache sqlite3
+        RemainAfterExit=yes 
+        ExecStart=/usr/local/bin/custom-provision.sh
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl --no-block reboot
 
